@@ -4,7 +4,8 @@ import { limiter } from "./middlewares/limiter";
 import helmet from 'helmet';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes';
-import customerRoutes from './routes/customerRoutes';
+import ticketsRoutes from './routes/ticketsRoutes';
+import userRoutes from './routes/userRoutes';
 import reqLogger from './middlewares/reqLogger';
 import { globalErrorHandler } from './middlewares/errorHandler';
 import { connectToDB } from './configs/prisma';
@@ -28,7 +29,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api/auth',authRoutes);
-app.use('/api/customers', customerRoutes);
+app.use('/api/tickets', ticketsRoutes);
+app.use('/api/', userRoutes);
 
 app.use(globalErrorHandler);
 
