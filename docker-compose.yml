@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: support_ticketing
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  app:
+    build: .
+    command: npm run start
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/support_ticketing
+      JWT_SECRET: your_jwt_secret
+      NODE_ENV: production
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+volumes:
+  db_data:
