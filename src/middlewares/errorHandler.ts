@@ -7,21 +7,21 @@ const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextF
 };
 
 const globalErrorHandler = (err : Error | APIError , req: Request, res: Response, next: NextFunction) => {
-    logger.error(err.stack); // Log the error stack
+    logger.error(err.message); // Log the error message
     if(err instanceof APIError) {
         res.status(err.statusCode).json({
-            success: 'Error',
+            success: false,
             error: err.message
         })
     } else if (err.name === 'ValidationError') {
         res.status(400).json({
-            success: 'Error',
+            success: false,
             error: "Validation Error"
         });
     } else {
         res.status(500).json({
-            success: 'Error',
-            error: `Internal Server Error : ${err.message}`
+            success: false,
+            error: `Internal Server Error`
         });
     }
 };

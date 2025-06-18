@@ -7,7 +7,7 @@ const reqLogger = (req: Request, res: Response, next: NextFunction) => {
     const url = req.originalUrl;
     const userAgent = req.get('User-Agent');
     const ip = req.ip;
-    logger.info(`[${timeStamp}] ${method} ${url} - ${userAgent} - IP: ${ip}`);
+    logger.info(`[${timeStamp}] ${method} ${url} - ${userAgent} - IP: ${ip} - Body: ${JSON.stringify(req.body)} `);
     next();
 };
 
