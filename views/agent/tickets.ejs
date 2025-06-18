@@ -20,7 +20,7 @@
           <form action="/agent/tickets/<%= ticket.id %>/status" method="POST" style="display:inline;">
             <select name="status" class="btn">
               <option value="Open" <%= ticket.status === 'Open' ? 'selected' : '' %>>Open</option>
-              <option value="In Progress" <%= ticket.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
+              <option value="InProgress" <%= ticket.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
               <option value="Resolved" <%= ticket.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
             </select>
             <button type="submit" class="btn">Update</button>

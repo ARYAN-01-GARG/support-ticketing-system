@@ -11,7 +11,6 @@ import reqLogger from './middlewares/reqLogger';
 import { globalErrorHandler } from './middlewares/errorHandler';
 import { connectToDB } from './configs/prisma';
 import path from 'path';
-import pagesRoutes from './routes/pagesRoutes';
 
 const PORT = process.env.PORT || 3000;
 const app: Express = express();
@@ -38,7 +37,6 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/auth',authRoutes);
 app.use('/tickets', ticketsRoutes);
 app.use('/', userRoutes);
-app.use('/', pagesRoutes);
 
 app.use(globalErrorHandler);
 
