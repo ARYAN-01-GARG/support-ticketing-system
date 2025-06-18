@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "package.json", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/dist/server.js" }
+  ],
+  "env": {
+    "DATABASE_URL": "",
+    "JWT_SECRET": "",
+    "GITHUB_TOKEN": "",
+    "GITHUB_REPO": "",
+    "PORT": "3000",
+    "NODE_ENV": "production"
+  }
+}
