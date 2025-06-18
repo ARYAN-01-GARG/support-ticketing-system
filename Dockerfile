@@ -17,4 +17,4 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/.env ./
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma generate && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]

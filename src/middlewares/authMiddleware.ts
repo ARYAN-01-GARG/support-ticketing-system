@@ -11,19 +11,22 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     // const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       logger.warn("No token provided");
-      throw new APIError("No token provided", 401);
+      res.status(401).send("Unauthorized: No token provided");
+      return;
     }
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       logger.error("JWT secret is not defined");
-      throw new APIError("Internal server error", 500);
+      res.status(500).send("Internal server error: JWT secret is not defined");
+      return;
     }
 
     const user = jwt.verify(token, secret) as { userId: string; role: "customer" | "admin" | "agent" };
     if (!user) {
       logger.warn("Invalid token");
-      throw new APIError("Invalid token", 401);
+      res.status(401).send("Unauthorized: Invalid token");
+      return;
     }
 
     logger.info("User authenticated:", user);
@@ -31,7 +34,9 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 
     next();
   } catch (error) {
-    next(error);
+    logger.error("Authentication error:", error);
+    res.status(401).send("Unauthorized: Invalid token");
+    return;
   }
 }
 
