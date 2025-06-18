@@ -11,7 +11,7 @@
     <% if (typeof error !== 'undefined') { %>
       <p style="color:red"><%= error %></p>
     <% } %>
-    <form class="form" action="/api/tickets/create" method="POST">
+    <form class="form" action="/tickets/create" method="POST">
       <label for="title">Title:</label>
       <input type="text" name="title" id="title" placeholder="Title" required><br>
       <label for="description">Description:</label>
