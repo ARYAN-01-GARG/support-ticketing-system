@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/css/style.css">
+  <title>Ticket Detail</title>
+</head>
+<body>
+  <% if (typeof error !== 'undefined') { %>
+    <p style="color:red"><%= error %></p>
+  <% } %>
+  <% if (ticket && typeof error === 'undefined') { %>
+    <h1 class="header"><%= ticket.title %></h1>
+    <div class="container3 cont">
+      <p class="">Status: <%= ticket.status %></p>
+      <p class="">Description: <%= ticket.description %></p>
+      <p class="">Category: <%= ticket.category %></p>
+      <p class="">GitHub Issue: <a href="<%= ticket.githubIssueUrl %>" target="_blank"><%= ticket.githubIssueUrl %></a></p>
+      <h2>Replies</h2>
+      <ul class="replies-list">
+        <% ticket.replies.forEach(reply => { %>
+          <li><%= reply.message %> (by <%= reply.user.name %>)</li>
+        <% }) %>
+      </ul>
+      <div class="reply-form">
+        <form class="form" action="/tickets/<%= ticket.id %>/reply" method="POST">
+          <textarea name="message" placeholder="Your reply" required></textarea><br>
+          <button type="submit">Reply</button>
+        </form>
+      </div>
+    </div>
+  <% } %>
+  <div style="display: flex; justify-content: center;">
+    <a  class="btn" href="/tickets">Back to Tickets</a>
+  </div>
+</body>
+</html>

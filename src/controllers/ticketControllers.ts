@@ -2,14 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../configs/prisma';
 import { createGithubIssue } from '../configs/github';
 import logger from '../middlewares/logger';
-import { APIError } from '../types/apiError';
 
 export const postCreateTicket = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   logger.info('Creating a new ticket');
-  const userId = req.user?.userId; // Assuming user ID is stored in req.user after auth middleware
+  const userId = req.user?.userId;
   if (!userId) {
     logger.error('User ID not found in request');
-    throw new APIError('User not authenticated', 401);
+    res.status(401).render('auth/login', { success: false, error: 'Unauthorized' });
+    return;
   }
   try {
     const { title, description, category } = req.body;
@@ -17,7 +17,8 @@ export const postCreateTicket = async (req: Request, res: Response, next: NextFu
     
     if (!ghIssue || !ghIssue.html_url || !ghIssue.number) {
       logger.error('Failed to create GitHub issue');
-      throw new APIError('Failed to create GitHub issue', 500);
+      res.status(500).render('error', { success: false, error: 'Failed to create GitHub issue' });
+      return;
     }
     logger.info(`GitHub issue created: ${ghIssue.html_url} with number ${ghIssue.number}`);
     // Creating ticket in DB
@@ -33,13 +34,11 @@ export const postCreateTicket = async (req: Request, res: Response, next: NextFu
       }
     });
     logger.info(`Ticket created with ID: ${ticket.id}`);
-    res.status(201).json({
-      success: true,
-      message: 'Ticket created successfully',
-      ticket,
-    });
+    res.status(201).render('tickets/create', { message: 'Ticket created successfully', ticket: ticket });
   } catch (err) {
-    next(err);
+    logger.error('Error creating ticket', err);
+    res.status(500).render('error', { success: false, error: 'Internal server error' });
+    return;
   }
 };
 
@@ -48,18 +47,24 @@ export const getTicketById = async (req: Request, res: Response, next: NextFunct
   try {
     const ticket = await prisma.ticket.findUnique({
       where: { id: req.params.id },
-      include: { replies: true },
+      include: { replies: {
+          include: { user: true }
+      } },
     });
     if (!ticket) {
       logger.warn(`Ticket with ID ${req.params.id} not found`);
-      throw new APIError('Ticket not found', 404);
+      res.status(404).render('tickets/detail', { success: false, error: 'Ticket not found', ticket: null });
+      return;
+    
     }
-    res.status(200).json({
+    res.status(200).render('tickets/detail', {
       success: true,
       ticket,
     });
   } catch (err) {
-    next(err);
+    logger.error(`Error fetching ticket with ID ${req.params.id}`, err);
+    res.status(500).render('tickets/detail', { success: false, error: 'Internal server error', ticket: null });
+    return;
   }
 };
 
@@ -70,12 +75,14 @@ export const getAllTickets = async (req: Request, res: Response, next: NextFunct
       include: { replies: true },
       orderBy: { createdAt: 'desc' },
     });
-    res.status(200).json({
+    res.status(200).render('tickets/list', {
       success: true,
       tickets,
     });
   } catch (err) {
-    next(err);
+    logger.error('Error fetching all tickets', err);
+    res.status(500).render('tickets/list', { success: false, error: 'Internal server error', tickets: [] });
+    return;
   }
 };
 
@@ -87,7 +94,8 @@ export const postReply = async (req: Request, res: Response, next: NextFunction)
     });
     if (!ticket) {
       logger.warn(`Ticket with ID ${req.params.id} not found`);
-      throw new APIError('Ticket not found', 404);
+      res.status(404).render('tickets/detail', { success: false, error: 'Ticket not found', ticket: null });
+      return;
     }
     const reply = await prisma.reply.create({
       data: {
@@ -96,20 +104,30 @@ export const postReply = async (req: Request, res: Response, next: NextFunction)
         message: req.body.message
       }
     });
-    await prisma.ticket.update({
+    const updatedTicket = await prisma.ticket.update({
       where: { id: ticket.id },
+      include: { replies: {
+          include: { user: true }
+      } },
       data: {
         replies: {
           connect: { id: reply.id }
         }
+
       }
     });
-    res.status(201).json({
+    res.status(201).render('tickets/detail', {
       success: true,
       message: 'Reply posted successfully',
-      reply,
+      ticket: updatedTicket,
     });
   } catch (err) {
-    next(err);
+    logger.error('Error posting reply', err);
+    res.status(500).render('error', { success: false, error: 'Internal server error', ticket: null });
+    return;
   }
 };
+
+export const renderTicketCreatePage = (req: Request, res: Response) => {
+  res.render('tickets/create');
+}

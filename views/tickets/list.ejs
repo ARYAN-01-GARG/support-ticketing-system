@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Tickets</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1 class="header">My Tickets</h1>
+  <div class="container2">
+    <a class="btn" href="/tickets/create">Create New Ticket</a>
+  </div>
+  <main class="container3">
+    <% if (typeof error !== 'undefined') { %>
+      <p style="color:red"><%= error %></p>
+    <% } %>
+    <ul>
+      <% tickets.forEach(ticket => { %>
+        <li class="row-element">
+          <a class="start" href="/tickets/<%= ticket.id %>"><%= ticket.title %></a><p><%= ticket.status %> </p> 
+          <a class="end" href="<%= ticket.githubIssueUrl %>" target="_blank">GitHub Issue</a>
+        </li>
+      <% }) %>
+    </ul>
+  </main>
+</body>
+</html>

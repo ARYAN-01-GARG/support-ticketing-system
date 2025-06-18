@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Agent Tickets</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1 class="header">Assigned Tickets</h1>
+  <main >
+    <% if (typeof error !== 'undefined') { %>
+      <p style="color:red"><%= error %></p>
+    <% } %>
+    <ul class="container3">
+      <% tickets.forEach(ticket => { %>
+        <li class="row-element">
+          <p class="start"><%= ticket.title %></p>
+          <p class="start"><%= ticket.status %></p>
+          <a class="end" href="<%= ticket.githubIssueUrl %>" target="_blank">GitHub Issue</a>
+          <form action="/agent/tickets/<%= ticket.id %>/status" method="POST" style="display:inline;">
+            <select name="status" class="btn">
+              <option value="Open" <%= ticket.status === 'Open' ? 'selected' : '' %>>Open</option>
+              <option value="In Progress" <%= ticket.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
+              <option value="Resolved" <%= ticket.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
+            </select>
+            <button type="submit" class="btn">Update</button>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+  </main>
+</body>
+</html>

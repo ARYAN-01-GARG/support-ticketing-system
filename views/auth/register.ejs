@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1 class="header">Register</h1>
+  <main class="main">
+    <% if (typeof error !== 'undefined') { %>
+      <p style="color:red"><%= error %></p>
+    <% } %>
+    <form class="form" action="/auth/register" method="POST">
+      <label for="name">Name :</label>
+      <input type="text" name="name" id="name" placeholder="Name" required><br>
+      <label for="email">Email :</label>
+      <input type="email" name="email" id="email" placeholder="Email" required><br>
+      <label for="password">Password :</label>
+      <input type="password" name="password" id="password" placeholder="Password" required><br>
+      <label for="role">Role :</label>
+      <select name="role" id="role" required>
+        <option value="customer">Customer</option>
+        <option value="agent">Support Agent</option>
+        <option value="admin">Admin</option>
+      </select><br>
+      <button type="submit">Register</button>
+      <a href="/auth/login">Already have an account? Login</a>
+    </form>
+  </main>
+</body>
+</html>

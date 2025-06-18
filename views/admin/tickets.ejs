@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Tickets</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1 class="header">All Tickets</h1>
+  <% if (typeof error !== 'undefined') { %>
+    <p style="color:red"><%= error %></p>
+  <% } %>
+  <ul class="container3">
+    <% tickets.forEach(ticket => { %>
+      <li class="row-element">
+        <p class="start"><%= ticket.title %></p>
+        <p class="start"><%= ticket.status %></p>
+        <a class="end" href="<%= ticket.githubIssueUrl %>" target="_blank">GitHub Issue</a>
+        <form action="/admin/tickets/<%= ticket.id %>/assign" method="POST" style="display:inline;">
+          <select class="btn" name="agentId">
+            <% agents.forEach(agent => { %>
+              <option value="<%= agent.id %>" <%= ticket.assignedTo && ticket.assignedTo.id === agent.id ? 'selected' : '' %>><%= agent.name %></option>
+            <% }) %>
+          </select>
+          <button type="submit" class="btn">Assign</button>
+        </form>
+        <form action="/admin/tickets/<%= ticket.id %>/close" method="POST" style="display:inline;">
+          <button type="submit" class="btn">Close</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+</body>
+</html>

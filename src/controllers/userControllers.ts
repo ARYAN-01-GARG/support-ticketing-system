@@ -13,15 +13,26 @@ export const getAgentTickets = async (req: Request, res: Response, next: NextFun
     });
     if (!tickets || tickets.length === 0) {
       logger.warn('No tickets found for agent', { agentId });
-      throw new APIError('No tickets found', 404);
+      res.status(404).render('agent/tickets', {
+        success: false,
+        error: 'No tickets found for agent',
+        tickets: []
+      });
+      return;
     }
-    res.status(200).json({
+    res.status(200).render('agent/tickets', {
       success: true,
       message: 'Tickets fetched successfully',
       tickets: tickets
     });
   } catch (err) {
-    next(err);
+    logger.error('Error fetching agent tickets', { error: err });
+    res.status(500).render('agent/tickets', {
+      success: false,
+      error: 'Failed to fetch tickets',
+      tickets: []
+    });
+    return;
   }
 };
 
@@ -45,11 +56,9 @@ export const updateTicketStatus = async (req: Request, res: Response, next: Next
         status: req.body.status,
       },
     });
-    res.status(200).json({
-      success: true,
-      message: 'Ticket status updated successfully',
-      ticket: updatedTicket
-    });
+    res.status(200);
+    res.redirect('/agent/tickets');
+    return;
   } catch (err) {
     next(err);
   }
@@ -65,22 +74,20 @@ export const getAdminTickets = async (req: Request, res: Response, next: NextFun
     });
     const agents = await prisma.user.findMany({
       where: { role: 'agent' },
-      select: {
-        id: true,
-        name: true,
-      },
     });
     if (!tickets) {
       logger.warn('No tickets found for admin');
-      throw new APIError('No tickets found', 404);
+      res.status(404).render('admin/tickets', { tickets: [], agents: [], error: 'No tickets found' });
+      return;
     }
     logger.info('Tickets fetched successfully', { count: tickets.length });
     if(!agents) {
       logger.warn('No agents found');
-      throw new APIError('No agents found', 404);
+      res.status(404).render('admin/tickets', { tickets: [], agents: [], error: 'No agents found' });
+      return;
     }
     logger.info('Agents fetched successfully', { count: agents.length });
-    res.status(200).json({
+    res.status(200).render('admin/tickets', {
       success: true,
       message: 'Tickets fetched successfully',
       tickets: tickets,
@@ -88,7 +95,9 @@ export const getAdminTickets = async (req: Request, res: Response, next: NextFun
     });
 
   } catch (err) {
-    next(err);
+    logger.error('Error fetching admin tickets', { error: err });
+    res.status(500).render('admin/tickets', { tickets: [], agents: [], error: 'Failed to fetch tickets' });
+    return;
   }
 };
 
@@ -99,19 +108,22 @@ export const assignTicket = async (req: Request, res: Response, next: NextFuncti
     });
     if (!ticket) {
       logger.warn('Ticket not found', { ticketId: req.params.id });
-      throw new APIError('Ticket not found', 404);
+      res.status(404).render('admin/tickets', { tickets: [], agents: [], error: 'Ticket not found' });
+      return;
     }
     const agentId = req.body.agentId;
     if (!agentId) {
       logger.warn('Agent ID not provided for ticket assignment', { ticketId: req.params.id });
-      throw new APIError('Agent ID is required', 400);
+      res.status(400).render('admin/tickets', { tickets: [], agents: [], error: 'Agent ID is required' });
+      return;
     }
     const agent = await prisma.user.findUnique({
       where: { id: agentId, role: 'agent' },
     });
     if (!agent) {
       logger.warn('Agent not found', { agentId });
-      throw new APIError('Agent not found', 404);
+      res.status(404).render('admin/tickets', { tickets: [], agents: [], error: 'Agent not found' });
+      return;
     }
     const updatedTicket = await prisma.ticket.update({
       where: { id: req.params.id },
@@ -120,13 +132,13 @@ export const assignTicket = async (req: Request, res: Response, next: NextFuncti
       },
     });
     logger.info('Ticket assigned successfully', { ticketId: req.params.id, agentId });
-    res.status(200).json({
-      success: true,
-      message: 'Ticket assigned successfully',
-      ticket: updatedTicket
-    });
+    res.status(200)
+    res.redirect('/admin/tickets');
+    return;
   } catch (err) {
-    next(err);
+    logger.error('Error assigning ticket', { error: err });
+    res.status(500).render('admin/tickets', { tickets: [], agents: [], error: 'Failed to assign ticket' });
+    return;
   }
 };
 
@@ -137,9 +149,10 @@ export const closeTicket = async (req: Request, res: Response, next: NextFunctio
     });
     if (!ticket) {
       logger.warn('Ticket not found', { ticketId: req.params.id });
-      throw new APIError('Ticket not found', 404);
+      res.status(404).render('admin/tickets', { tickets: [], agents: [], error: 'Ticket not found' });
+      return;
     }
-    const updatedTicket = await prisma.ticket.update({
+    await prisma.ticket.update({
       where: { id: req.params.id },
       data: {
         status: 'Resolved',
@@ -149,12 +162,12 @@ export const closeTicket = async (req: Request, res: Response, next: NextFunctio
     if (ticket.githubIssueNumber) {
       await closeGithubIssue(ticket.githubIssueNumber);
     }
-    res.status(200).json({
-      success: true,
-      message: 'Ticket closed successfully',
-      ticket: updatedTicket
-    });
+    res.status(200);
+    res.redirect('/admin/tickets');
+    return;
   } catch (err) {
-    next(err);
+    logger.error('Error closing ticket', { error: err });
+    res.status(500).render('admin/tickets', { tickets: [], agents: [], error: 'Failed to close ticket' });
+    return;
   }
 };

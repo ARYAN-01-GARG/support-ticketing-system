@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Ticketing System</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1 class="header">Welcome to the Support Ticketing System</h1>
+  <main class="main">
+      <p class="hero">This is a Support ticketing system where users can register, login, and manage their tickets.</p>
+    <nav>
+      <ul class="container">
+        <li><a href="/auth/register">Register</a></li>
+        <li><a href="/auth/login">Login</a></li>
+        <li><a href="/tickets">Tickets</a></li>
+        <li><a href="/agent/tickets">Agent Tickets</a></li>
+        <li><a href="/admin/tickets">Admin Tickets</a></li>
+      </ul>
+    </nav>
+    <% if (typeof message !== 'undefined') { %>
+      <p style="color:green"><%= message %></p>
+    <% } %>
+  </main>
+  <footer class="footer">
+    <p>&copy; 2025 Support Ticketing System</p>
+  </footer>
+</body>
+</html>

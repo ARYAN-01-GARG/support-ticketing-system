@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Ticket</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1 class="header">Create Support Ticket</h1>
+  <main class="main">
+    <% if (typeof error !== 'undefined') { %>
+      <p style="color:red"><%= error %></p>
+    <% } %>
+    <form class="form" action="/api/tickets/create" method="POST">
+      <label for="title">Title:</label>
+      <input type="text" name="title" id="title" placeholder="Title" required><br>
+      <label for="description">Description:</label>
+      <textarea name="description" id="description" placeholder="Description" required></textarea><br>
+      <label for="category">Category (optional):</label>
+      <input type="text" name="category" id="category" placeholder="Category (optional)"><br>
+      <button type="submit">Create Ticket</button>
+      <a href="/tickets">Back to Tickets</a>
+    </form>
+  </main>
+</body>
+</html>

@@ -10,12 +10,12 @@ const router = Router();
 router.get('/agent/tickets/', authMiddleware, verifyRole('agent'), getAgentTickets);
 router.post('/agent/tickets/:id/status',
   authMiddleware,
-  verifyRole('admin'),
+  verifyRole('agent'),
   updateTicketStatus
 );
 
 // Admin routes
-router.get('/admin/tickets/', authMiddleware, verifyRole('admin'), getAdminTickets);
+router.get('/admin/tickets', authMiddleware, verifyRole('admin'), getAdminTickets);
 router.post('/admin/tickets/:id/assign',
   authMiddleware,
   verifyRole('admin'),

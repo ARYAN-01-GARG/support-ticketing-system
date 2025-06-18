@@ -6,12 +6,23 @@ import { prisma } from "../configs/prisma";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../helpers/genrateToken";
 
+
+export const renderRegisterPage = (req: Request, res: Response) => {
+  res.render('auth/register');
+}
+
+export const renderLoginPage = (req: Request, res: Response) => {
+  res.render('auth/login');
+}
+
 export const registerUser = async (req: Request<{}, {}, RegisterRequest>, res: Response, next : NextFunction) => {
   logger.info("Registering user...");
   try {
     const { name, email, password, role } = req.body;
     if (!name || !email || !password || !role) {
-      throw new APIError("All fields are required", 400);
+      logger.warn("All fields are required for registration");
+      res.status(400).render('auth/register', { error: "All fields are required" });
+      return;
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -19,7 +30,8 @@ export const registerUser = async (req: Request<{}, {}, RegisterRequest>, res: R
     });
     if (existingUser) {
       logger.warn(`User with email ${email} already exists`);
-      throw new APIError("User already exists", 409);
+      res.status(409).render('auth/register', { error: "User already exists" });
+      return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -35,21 +47,15 @@ export const registerUser = async (req: Request<{}, {}, RegisterRequest>, res: R
 
     if (!newUser) {
       logger.error("User registration failed");
-      throw new APIError("User registration failed", 500);
+      res.status(500).render('auth/register', { error: "User registration failed" });
+      return;
     }
     logger.info(`User registered successfully: ${newUser.email}`);
-    res.status(201).json({ 
-      success: true,
-      message: "User registered successfully",
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role
-      }
-    });
+    res.status(201).render('home/home', { message: "User registered successfully. Please log in." });
     } catch (error) {
-      next(error);
+    logger.error("Error during user registration", error);
+    res.status(500).render('auth/register', { error: "Internal server error" });
+    return;
     }
 }
 
@@ -59,7 +65,8 @@ export const loginUser = async (req: Request<{}, {}, LoginRequest>, res: Respons
     const { email, password } = req.body;
     if (!email || !password) {
       logger.warn("Email and password are required");
-      throw new APIError("Email and password are required", 400);
+      res.status(400).render('auth/login', { error: "Email and password are required" });
+      return;
     }
 
     const user = await prisma.user.findUnique({
@@ -67,28 +74,31 @@ export const loginUser = async (req: Request<{}, {}, LoginRequest>, res: Respons
     });
     if (!user) {
       logger.warn(`User with email ${email} not found`);
-      throw new APIError("Invalid email or password", 401);
+      res.status(404).render('auth/login', { error: "User not found" });
+      return;
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       logger.warn("Invalid password");
-      throw new APIError("Invalid password", 401);
+      res.status(401).render('auth/login', { error: "Invalid password" });
+      return;
     }
     const token = generateToken(user.id, user.role);
+    res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
     logger.info(`User logged in successfully: ${user.email}`);
-    res.status(200).json({ 
-      success: true,
-      message: "User logged in successfully",
+    res.status(200).render('home/home', {
+      message: "Login successful",
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
-      },
-      token
+        role: user.role,
+      }
     });
   } catch (error) {
-    next(error);
+    logger.error("Error during user login", error);
+    res.status(500).render('auth/login', { error: "Internal server error" });
+    return;
   }
 }

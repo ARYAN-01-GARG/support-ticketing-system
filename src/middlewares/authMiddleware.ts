@@ -7,7 +7,8 @@ import { APIError } from "../types/apiError";
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   logger.info("Verifying authentication...");
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.cookies.token;
+    // const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       logger.warn("No token provided");
       throw new APIError("No token provided", 401);
@@ -39,11 +40,13 @@ export const verifyRole = (role: ("customer" | "admin" | "agent")) => {
     const userRole = req.user?.role;
     if (!userRole) {
       logger.warn("User role not found");
-      throw new APIError("User role not found", 403);
+      res.status(403).send("User role not found");
+      return;
     }
     if (userRole !== role) {
       logger.warn(`Forbidden: User role ${userRole} does not match required role ${role}`);
-      throw new APIError("Forbidden", 403);
+      res.status(403).send("Forbidden");
+      return;
     }
     next();
   };
